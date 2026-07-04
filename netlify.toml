@@ -11,16 +11,16 @@
   # The directory to publish relative to the base directory
   publish = "dist"
 
-# ── Redirect / Rewrite rules for single page application (SPA) routing ──────
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
-
-# ── API Proxy Rewrite ───────────────────────────────────────────────────────
+# ── API Proxy Rewrite (Must be first to take precedence) ────────────────────
 # Netlify redirects `/api/*` calls to your running production backend on Render.
 [[redirects]]
   from = "/api/*"
   to = "https://sct-ml-2-qcsp.onrender.com/api/:splat"
   status = 200
   force = true
+
+# ── Redirect / Rewrite rules for single page application (SPA) routing ──────
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
