@@ -1,0 +1,27 @@
+# ── Netlify Build Configuration ─────────────────────────────────────────────
+# This tells Netlify how to build the project since the frontend is in a subfolder.
+
+[build]
+  # The path to your frontend directory relative to the repository root
+  base = "frontend"
+  
+  # The build command to run inside the base directory
+  command = "npm run build"
+  
+  # The directory to publish relative to the base directory
+  publish = "dist"
+
+# ── Redirect / Rewrite rules for single page application (SPA) routing ──────
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# ── API Proxy Rewrite ───────────────────────────────────────────────────────
+# When your backend is deployed (e.g., to Render/Railway), change this address
+# to point to your deployed backend URL.
+[[redirects]]
+  from = "/api/*"
+  to = "http://localhost:8000/api/:splat"
+  status = 200
+  force = true
