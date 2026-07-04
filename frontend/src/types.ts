@@ -15,6 +15,7 @@ export interface CentroidPoint {
   annual_income: number;
   spending_score: number;
   age: number | null;
+  marketing?: Record<string, string>;
 }
 
 export interface ClusterAssignment extends CustomerRecord {

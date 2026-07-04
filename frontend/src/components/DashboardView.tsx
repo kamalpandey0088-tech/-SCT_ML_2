@@ -1,8 +1,6 @@
-// ============================================================
-// DashboardView.tsx — View 1: Global Telemetry Dashboard
-// ============================================================
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Users, DollarSign, Target, Layers } from 'lucide-react';
+import { Users, DollarSign, Target, Layers, Megaphone, Send, Copy, Check } from 'lucide-react';
 import { KpiCard } from './KpiCard';
 import { DataGrid } from './DataGrid';
 import type { AppState } from '../types';
@@ -13,6 +11,8 @@ interface Props {
 
 export function DashboardView({ state }: Props) {
   const { segmentation, dataset, elbowData } = state;
+  const [selectedClusterId, setSelectedClusterId] = useState<number>(0);
+  const [copied, setCopied] = useState(false);
 
   const avgIncome = dataset.length
     ? (dataset.reduce((s, c) => s + c.annual_income, 0) / dataset.length).toFixed(1)
@@ -20,6 +20,14 @@ export function DashboardView({ state }: Props) {
   const avgScore = dataset.length
     ? (dataset.reduce((s, c) => s + c.spending_score, 0) / dataset.length).toFixed(1)
     : '—';
+
+  const selectedCentroid = segmentation?.centroids.find(c => c.cluster_id === selectedClusterId);
+
+  const handleCopy = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   return (
     <div className="flex flex-col gap-8">
@@ -84,7 +92,7 @@ export function DashboardView({ state }: Props) {
           <div className="flex items-center justify-between mb-5">
             <div>
               <h2 className="text-white font-bold text-xl">Cluster Distribution</h2>
-              <p className="text-white/40 text-sm mt-1">K={segmentation.k} segments · {segmentation.scaler_used} scaling</p>
+              <p className="text-white/40 text-sm mt-1">Select a segment below to load dynamic campaign recommendations</p>
             </div>
             <div className="flex gap-3 text-xs">
               <div className="glass px-3 py-2 rounded-lg border border-[#10b981]/30">
@@ -117,24 +125,29 @@ export function DashboardView({ state }: Props) {
                 8: { name: 'Seasonal Buyers', emoji: '🌊' },
                 9: { name: 'Wildcards', emoji: '🎲' },
               };
-              const persona = PERSONAS[centroid.cluster_id];
+              const persona = PERSONAS[centroid.cluster_id] ?? { name: centroid.marketing?.persona ?? `Cluster ${centroid.cluster_id}`, emoji: '📊' };
+              const isSelected = selectedClusterId === centroid.cluster_id;
 
               return (
                 <motion.div
                   key={centroid.cluster_id}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: centroid.cluster_id * 0.06 }}
-                  className="glass-hover rounded-xl p-4 border transition-all"
-                  style={{ borderColor: `${color}25` }}
+                  onClick={() => setSelectedClusterId(centroid.cluster_id)}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className={`rounded-xl p-4 border cursor-pointer transition-all ${
+                    isSelected 
+                      ? 'bg-white/06 border-[#00f5ff]/60 shadow-[0_0_20px_rgba(0,245,255,0.15)]' 
+                      : 'glass border-white/05 hover:border-white/15'
+                  }`}
+                  style={isSelected ? { borderColor: color } : {}}
                 >
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
                       <div className="w-8 h-8 rounded-lg flex items-center justify-center text-sm" style={{ background: `${color}20`, border: `1px solid ${color}40` }}>
-                        {persona?.emoji}
+                        {persona.emoji}
                       </div>
                       <div>
-                        <p className="text-white text-xs font-semibold">{persona?.name}</p>
+                        <p className="text-white text-xs font-semibold">{persona.name}</p>
                         <p className="text-white/40 text-[10px]">Cluster {centroid.cluster_id}</p>
                       </div>
                     </div>
@@ -146,7 +159,7 @@ export function DashboardView({ state }: Props) {
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${pct}%` }}
-                      transition={{ delay: centroid.cluster_id * 0.08 + 0.5, duration: 0.6, ease: 'easeOut' }}
+                      transition={{ duration: 0.6, ease: 'easeOut' }}
                       className="h-full rounded-full"
                       style={{ background: color, boxShadow: `0 0 8px ${color}` }}
                     />
@@ -170,6 +183,63 @@ export function DashboardView({ state }: Props) {
               );
             })}
           </div>
+
+          {/* Dynamic Marketing pane */}
+          {selectedCentroid?.marketing && (
+            <motion.div
+              key={selectedClusterId}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="mt-6 p-5 rounded-xl border border-white/08 bg-white/02 flex flex-col md:flex-row gap-5 justify-between relative overflow-hidden"
+            >
+              <div className="flex-1 flex flex-col gap-3">
+                <div className="flex items-center gap-2">
+                  <Megaphone className="w-5 h-5 text-[#00f5ff]" />
+                  <h3 className="text-white font-bold text-sm uppercase tracking-wide">
+                    Automated Campaign Strategy — Segment C{selectedClusterId}
+                  </h3>
+                  <span className={`text-[9px] px-2 py-0.5 rounded-full border uppercase font-bold tracking-wider ${
+                    selectedCentroid.marketing.priority.includes('HIGH')
+                      ? 'bg-red-500/20 text-red-400 border-red-500/40'
+                      : selectedCentroid.marketing.priority.includes('MEDIUM')
+                      ? 'bg-amber-500/20 text-amber-400 border-amber-500/40'
+                      : 'bg-green-500/20 text-green-400 border-green-500/40'
+                  }`}>
+                    {selectedCentroid.marketing.priority}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs mt-1">
+                  <div className="bg-white/03 p-3 rounded-lg border border-white/05">
+                    <p className="text-white/40 mb-1">Target Channel</p>
+                    <p className="text-[#00f5ff] font-semibold">{selectedCentroid.marketing.channel}</p>
+                  </div>
+                  <div className="bg-white/03 p-3 rounded-lg border border-white/05">
+                    <p className="text-white/40 mb-1">Promo Strategy</p>
+                    <p className="text-[#fbbf24] font-semibold">{selectedCentroid.marketing.offer}</p>
+                  </div>
+                </div>
+
+                {/* Target Copywriting card */}
+                <div className="bg-white/03 p-4 rounded-lg border border-white/05 relative">
+                  <p className="text-white/40 text-[10px] mb-2 flex items-center gap-1.5 uppercase tracking-wide">
+                    <Send className="w-3.5 h-3.5" /> Direct Marketing Copywrite
+                  </p>
+                  <blockquote className="text-white/80 text-sm italic pr-12 font-sans font-medium">
+                    "{selectedCentroid.marketing.copy}"
+                  </blockquote>
+                  <button
+                    onClick={() => handleCopy(selectedCentroid.marketing?.copy ?? '')}
+                    className="absolute top-4 right-4 p-2 rounded-lg bg-white/05 hover:bg-white/10 text-white/50 hover:text-white transition-all border border-white/10"
+                    title="Copy campaign copy"
+                  >
+                    {copied ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
         </motion.div>
       )}
 

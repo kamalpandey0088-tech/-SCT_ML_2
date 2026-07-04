@@ -137,6 +137,71 @@ def _run_kmeans_sync(
     }
 
 
+def _get_marketing_strategy(income: float, score: float) -> Dict[str, str]:
+    """
+    Generate tailored automated marketing campaigns dynamically based on 
+    the centroid coordinates in original feature space.
+    """
+    if income > 65.0:
+        if score > 65.0:
+            return {
+                "persona": "Premium VIPs",
+                "priority": "HIGH (Top Tier)",
+                "channel": "Concierge / VIP WhatsApp / Email",
+                "offer": "Exclusive First-Look Pre-Orders & Private Collections",
+                "copy": "Private invitation: Preview the Autumn Collection this Friday. RSVP now for early pre-order access."
+            }
+        elif score < 35.0:
+            return {
+                "persona": "Careful Elite",
+                "priority": "MEDIUM (Affluent Savers)",
+                "channel": "Direct Mail / Premium Newsletter",
+                "offer": "Free White-Glove Delivery & Extended Warranty",
+                "copy": "Invest in quality. Enjoy complimentary delivery and an extended 3-year warranty on all luxury items."
+            }
+        else:
+            return {
+                "persona": "Affluent Core",
+                "priority": "MEDIUM (Stable Core)",
+                "channel": "In-App Banners / Email",
+                "offer": "15% off next collection release",
+                "copy": "Elevate your wardrobe. Enjoy 15% off the premium seasonal collection with code VIP15."
+            }
+    elif income < 40.0:
+        if score > 65.0:
+            return {
+                "persona": "Impulsive Shoppers",
+                "priority": "HIGH (Thrill Seekers)",
+                "channel": "SMS Broadcast / Instagram Retargeting",
+                "offer": "Flash Sale: 30% Off New Trend Arrivals",
+                "copy": "Hot item alert! Grab 30% off latest trends before they sell out. Valid next 4 hours!"
+            }
+        elif score < 35.0:
+            return {
+                "persona": "Budget Hunters",
+                "priority": "LOW (Price Sensitive)",
+                "channel": "Push Notifications / Email",
+                "offer": "Clearance Deals: Buy 1 Get 1 Free",
+                "copy": "Maximize your budget! Unlock exclusive Buy 1 Get 1 Free offers on clearance essentials today."
+            }
+        else:
+            return {
+                "persona": "Value Core",
+                "priority": "LOW (Thrifty Shoppers)",
+                "channel": "Email newsletter",
+                "offer": "10% off storewide clearance items",
+                "copy": "Quality at a discount: Shop our clearance items and get an extra 10% off with coupon SAVEMORE."
+            }
+    else:
+        return {
+            "persona": "Mid-Market Core",
+            "priority": "MEDIUM (Consistent Spenders)",
+            "channel": "Personalized Mobile Alerts / In-App",
+            "offer": "Spend $100, Get $15 Gift Voucher",
+            "copy": "Thanks for being a loyal customer! Spend $100 today and get a $15 voucher for your next trip."
+        }
+
+
 # ── Async Wrapper ─────────────────────────────────────────────────────────────
 async def run_kmeans(
     customers: List[CustomerRecord],
@@ -175,6 +240,7 @@ async def run_kmeans(
             annual_income=round(centroid[0], 4),
             spending_score=round(centroid[1], 4),
             age=round(centroid[2], 2) if len(feat_cols) > 2 else None,
+            marketing=_get_marketing_strategy(centroid[0], centroid[1]),
         )
         centroids.append(cp)
 

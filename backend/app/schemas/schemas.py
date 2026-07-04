@@ -190,6 +190,7 @@ class CentroidPoint(BaseModel):
     annual_income: float
     spending_score: float
     age: Optional[float] = None
+    marketing: Optional[Dict[str, str]] = None
 
 
 class ClusterAssignment(BaseModel):
