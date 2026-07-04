@@ -1,0 +1,33 @@
+# ============================================================
+# Customer Segmentation API — Production Requirements
+# Python 3.11+ | FastAPI | Scikit-Learn | Zero-Trust Security
+# ============================================================
+
+# --- Core Web Framework ---
+fastapi==0.111.0
+uvicorn[standard]==0.29.0          # ASGI server with hot-reload & WebSocket support
+python-multipart==0.0.9            # Required for file uploads (CSV ingestion)
+
+# --- ML & Data Science Stack ---
+scikit-learn==1.5.0
+numpy==1.26.4
+pandas==2.2.2
+
+# --- Security & Validation ---
+pydantic==2.7.1                    # v2: ultra-fast Rust-core validation
+pydantic-settings==2.2.1           # Environment-based config management
+slowapi==0.1.9                     # Starlette-native rate limiting (wraps limits)
+limits==3.12.0                     # Backend storage for rate limiter
+python-jose[cryptography]==3.3.0   # JWT (reserved for future auth layer)
+
+# --- Async & Concurrency ---
+anyio==4.3.0                       # Async primitives (used by FastAPI internally)
+httpx==0.27.0                      # Async HTTP client (for integration tests)
+
+# --- Utilities ---
+python-dotenv==1.0.1               # .env file loader
+orjson==3.10.3                     # Ultra-fast JSON serialization (10x faster than stdlib)
+
+# --- Testing ---
+pytest==8.2.0
+pytest-asyncio==0.23.6
