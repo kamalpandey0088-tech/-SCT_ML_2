@@ -18,10 +18,9 @@
   status = 200
 
 # ── API Proxy Rewrite ───────────────────────────────────────────────────────
-# When your backend is deployed (e.g., to Render/Railway), change this address
-# to point to your deployed backend URL.
+# Netlify redirects `/api/*` calls to your running local backend via the secure tunnel.
 [[redirects]]
   from = "/api/*"
-  to = "http://localhost:8000/api/:splat"
+  to = "https://26d25c8dd0c284.lhr.life/api/:splat"
   status = 200
   force = true
