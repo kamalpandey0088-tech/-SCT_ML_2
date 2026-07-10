@@ -158,7 +158,7 @@ export function ClusterScatterPlot({ data }: Props) {
             label={{ value: 'Spending Score', angle: -90, position: 'insideLeft', offset: 10, fill: 'rgba(255,255,255,0.4)', fontSize: 12 }}
             tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 11 }}
           />
-          <Tooltip content={<></>} />
+          <Tooltip content={() => null} />
 
           {/* Data points per cluster */}
           {Array.from({ length: data.k }, (_, clusterIdx) => {
